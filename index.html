@@ -6,6 +6,8 @@
 <title>soundmarks</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Overpass+Mono:wght@300;400&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -49,6 +51,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
 .leaflet-popup-tip-container{display:none;}
 .leaflet-popup-close-button{color:var(--dim)!important;font-size:1rem!important;top:10px!important;right:12px!important;}
 .leaflet-popup-close-button:hover{color:var(--text)!important;}
+
+/* ── Animated radiating marker ── */
+.sm-marker{position:relative;display:flex;align-items:center;justify-content:center;}
+.sm-dot{border-radius:50%;position:relative;z-index:2;flex-shrink:0;}
+.sm-ring{position:absolute;border-radius:50%;border:1px solid currentColor;top:50%;left:50%;transform:translate(-50%,-50%);animation:ripple 2.4s ease-out infinite;opacity:0;}
+.sm-ring:nth-child(2){animation-delay:0s;}
+.sm-ring:nth-child(3){animation-delay:0.8s;}
+.sm-ring:nth-child(4){animation-delay:1.6s;}
+@keyframes ripple{
+  0%{width:var(--dot-size);height:var(--dot-size);opacity:0.7;}
+  100%{width:calc(var(--dot-size)*4.5);height:calc(var(--dot-size)*4.5);opacity:0;}
+}
 
 #hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);background:var(--surf);border:1px solid var(--rule);padding:0.35rem 1.1rem;font-family:var(--mono);font-size:0.56rem;color:var(--dim);z-index:700;pointer-events:none;letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;}
 
@@ -244,11 +258,32 @@ var CATS=[
 var INT=['Very Quiet','Quiet','Moderate','Loud','Very Loud'];
 var COL={natural:'#5a9a6a',urban:'#c07040',human:'#4a7abf',mechanical:'#a04a7a',ambient:'#7a60c0',silence:'#6a6a60'};
 
-var marks=JSON.parse(localStorage.getItem('sm-world')||'[]');
+// ── Firebase init ──
+var firebaseConfig={
+  apiKey:"AIzaSyB21-WZ4iGXvcbKKokrTTuAEj51F-Ath5Q",
+  authDomain:"a-soundmarks.firebaseapp.com",
+  databaseURL:"https://a-soundmarks-default-rtdb.firebaseio.com",
+  projectId:"a-soundmarks",
+  storageBucket:"a-soundmarks.firebasestorage.app",
+  messagingSenderId:"1054648701354",
+  appId:"1:1054648701354:web:85713f608d0a72cfb51bd3"
+};
+firebase.initializeApp(firebaseConfig);
+var db=firebase.database();
+var marksRef=db.ref('marks');
+
+var marks=[];
 var filt='all',plng=null,pplace='',scat='natural',lms={};
 var pendingAudio=null;
 var pendingImg=null;
 var activePlayers={};
+
+// ── Live sync from Firebase ──
+marksRef.on('value',function(snap){
+  marks=[];
+  snap.forEach(function(child){marks.push(child.val());});
+  rm();
+});
 
 var map=L.map('map',{center:[20,0],zoom:2,minZoom:2});
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
@@ -427,35 +462,19 @@ sc('natural');
 document.getElementById('fi').oninput=function(e){document.getElementById('il').textContent=INT[e.target.value];};
 document.getElementById('ft').oninput=function(e){document.getElementById('bs').disabled=!e.target.value.trim();};
 
-function mkIcon(cat,intensity,hasAudio,hasImg,waveform){
+function mkIcon(cat,intensity){
   var col=COL[cat]||'#888';
-  var r=5+intensity*2;
-  var waveR=waveform?36+intensity*3:r+8; // outer radius for waveform or fallback ring
-  var s=(waveR+6)*2;
-  var cx=s/2,cy=s/2;
-  var parts='';
-
-  if(waveform&&waveform.length){
-    // draw radial bars from the center dot outward, spaced around 360deg
-    var n=waveform.length;
-    for(var i=0;i<n;i++){
-      var angle=(i/n)*Math.PI*2 - Math.PI/2;
-      var barLen=4+(waveform[i]*(waveR-r-6));
-      var x1=cx+Math.cos(angle)*(r+3);
-      var y1=cy+Math.sin(angle)*(r+3);
-      var x2=cx+Math.cos(angle)*(r+3+barLen);
-      var y2=cy+Math.sin(angle)*(r+3+barLen);
-      var op=(0.3+waveform[i]*0.65).toFixed(2);
-      parts+="<line x1='"+x1.toFixed(1)+"' y1='"+y1.toFixed(1)+"' x2='"+x2.toFixed(1)+"' y2='"+y2.toFixed(1)+"' stroke='"+col+"' stroke-width='1.2' opacity='"+op+"'/>";
-    }
-  } else if(hasAudio){
-    // fallback dashed ring
-    parts="<circle cx='"+cx+"' cy='"+cy+"' r='"+(r+5)+"' fill='none' stroke='"+col+"' stroke-width='0.8' stroke-dasharray='2.5,2' opacity='0.45'/>";
-  }
-
-  var dot=hasImg?("<circle cx='"+(s-5)+"' cy='5' r='3' fill='"+col+"' opacity='0.9'/>"):'';
-  var svg="<svg xmlns='http://www.w3.org/2000/svg' width='"+s+"' height='"+s+"'>"+parts+dot+"<circle cx='"+cx+"' cy='"+cy+"' r='"+r+"' fill='"+col+"' opacity='0.92'/></svg>";
-  return L.divIcon({html:svg,className:'',iconSize:[s,s],iconAnchor:[cx,cy]});
+  var dotPx=8+intensity*3; // dot diameter in px, grows with intensity
+  var pad=dotPx*2.5;       // padding for rings to expand into
+  var s=Math.round(dotPx+pad*2);
+  var speed=(2.8-intensity*0.3).toFixed(1); // faster pulse for louder sounds
+  var html="<div class=\'sm-marker\' style=\'width:"+s+"px;height:"+s+"px;\'>"+
+    "<div class=\'sm-ring\' style=\'color:"+col+";--dot-size:"+dotPx+"px;animation-duration:"+speed+"s;\'></div>"+
+    "<div class=\'sm-ring\' style=\'color:"+col+";--dot-size:"+dotPx+"px;animation-duration:"+speed+"s;\'></div>"+
+    "<div class=\'sm-ring\' style=\'color:"+col+";--dot-size:"+dotPx+"px;animation-duration:"+speed+"s;\'></div>"+
+    "<div class=\'sm-dot\' style=\'width:"+dotPx+"px;height:"+dotPx+"px;background:"+col+";opacity:0.92;\'></div>"+
+    "</div>";
+  return L.divIcon({html:html,className:'',iconSize:[s,s],iconAnchor:[s/2,s/2]});
 }
 
 function puHTML(m){
@@ -473,7 +492,7 @@ function rm(){
   Object.values(lms).forEach(function(l){map.removeLayer(l);});lms={};
   var fl=filt==='all'?marks:marks.filter(function(m){return m.category===filt;});
   fl.forEach(function(m){
-    lms[m.id]=L.marker(m.position,{icon:mkIcon(m.category,m.intensity,!!m.audio,!!m.image,m.waveform||null)}).addTo(map).bindPopup(puHTML(m),{maxWidth:340});
+    lms[m.id]=L.marker(m.position,{icon:mkIcon(m.category,m.intensity)}).addTo(map).bindPopup(puHTML(m),{maxWidth:340});
   });ui();
 }
 
@@ -533,24 +552,25 @@ function sc(id){
 
 function saveM(){
   var t=document.getElementById('ft').value.trim();if(!t||!plng)return;
-  var m={id:'sm-'+Date.now()+'-'+Math.random().toString(36).slice(2),title:t,
+  var id='sm-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+  var m={id:id,title:t,
     description:document.getElementById('fd').value.trim(),category:scat,
     intensity:+document.getElementById('fi').value,contributor:document.getElementById('fn').value.trim(),
     position:[plng.lat,plng.lng],place:pplace,date:new Date().toISOString(),
     audio:pendingAudio?pendingAudio.dataUrl:null,
     waveform:pendingAudio?pendingAudio.waveform:null,
     image:pendingImg?pendingImg.dataUrl:null};
-  marks.push(m);
-  try{localStorage.setItem('sm-world',JSON.stringify(marks));}
-  catch(e){alert('Storage full — try a shorter recording or remove old marks.');}
-  cm();rm();setTimeout(function(){if(lms[m.id])lms[m.id].openPopup();},100);
+  marksRef.child(id).set(m).catch(function(e){
+    alert('Could not save — check your connection. ('+e.message+')');
+  });
+  cm();
+  setTimeout(function(){if(lms[id])lms[id].openPopup();},600);
 }
 
 function dm(id){
-  marks=marks.filter(function(m){return m.id!==id;});
-  localStorage.setItem('sm-world',JSON.stringify(marks));
+  marksRef.child(id).remove().catch(function(e){alert('Could not remove mark.');});
   if(lms[id]){map.removeLayer(lms[id]);delete lms[id];}
-  map.closePopup();ui();
+  map.closePopup();
 }
 
 function sv(v){
@@ -560,7 +580,7 @@ function sv(v){
   if(v==='map')map.invalidateSize();
 }
 
-sf('all');rm();
+sf('all');
 </script>
 </body>
 </html>
