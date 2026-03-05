@@ -484,7 +484,7 @@ function puHTML(m){
   if(m.description)h+="<div class='pu-desc'>"+m.description+"</div>";
   if(m.audio)h+="<div class='pu-audio'><audio controls preload='none' src='"+m.audio+"'></audio></div>";
   h+="<div class='pu-meta'><span>"+INT[m.intensity]+"</span><span>"+(m.contributor||'Anonymous')+"</span><span>"+new Date(m.date).toLocaleDateString()+"</span></div>";
-  h+="<button class='pu-del' onclick='dm(\""+m.id+"\")'>Remove</button></div>";
+  h+="</div>";
   return h;
 }
 
