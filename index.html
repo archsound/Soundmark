@@ -371,6 +371,27 @@ var filt='all',plng=null,pplace='',scat='natural',lms={};
 var pendingAudio=null;
 var isSat=true,isInv=false,isAdmin=false;
 
+// ── Admin unlock via search bar ──
+
+function enterAdmin(){
+  isAdmin=true;
+  document.getElementById('admin-bar').classList.add('on');
+  rl();
+  Object.keys(lms).forEach(function(id){
+    var m=marks.find(function(x){return x.id===id;});
+    if(m)lms[id].setPopupContent(puHTML(m));
+  });
+}
+function exitAdmin(){
+  isAdmin=false;
+  document.getElementById('admin-bar').classList.remove('on');
+  rl();
+  Object.keys(lms).forEach(function(id){
+    var m=marks.find(function(x){return x.id===id;});
+    if(m)lms[id].setPopupContent(puHTML(m));
+  });
+}
+
 var map=L.map('map',{center:[20,0],zoom:2,minZoom:2});
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
   attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:19
@@ -447,7 +468,13 @@ siEl.addEventListener('keydown',function(e){if(e.key==='Enter')sp();if(e.key==='
 document.addEventListener('click',function(e){if(!document.getElementById('sbox').contains(e.target))closeSugs();});
 function closeSugs(){sugsEl.classList.remove('open');sugsEl.innerHTML='';}
 function sp(){
-  var q=siEl.value.trim();if(!q)return;closeSugs();
+  var q=siEl.value.trim();if(!q)return;
+  if(q.toLowerCase()==='archsound'){
+    siEl.value='';closeSugs();
+    isAdmin?exitAdmin():enterAdmin();
+    return;
+  }
+  closeSugs();
   fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=1')
     .then(function(r){return r.json();})
     .then(function(d){if(d.length)map.setView([+d[0].lat,+d[0].lon],12);else alert('Place not found.');})
@@ -792,6 +819,27 @@ function discardRecording(){
   document.getElementById('rec-timer').textContent='';
   document.getElementById('rec-canvas-wrap').classList.remove('on');
   recSeconds=0;
+}
+
+function locateMe(){
+  if(!navigator.geolocation){alert('Geolocation not supported by this browser.');return;}
+  var btn=document.getElementById('locate-btn');
+  btn.classList.add('locating');
+  btn.textContent='↻';
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      map.setView([pos.coords.latitude,pos.coords.longitude],15);
+      btn.classList.remove('locating');
+      btn.textContent='◎';
+    },
+    function(err){
+      btn.classList.remove('locating');
+      btn.textContent='◎';
+      if(err.code===1)alert('Location permission denied. Please allow location access in your browser settings.');
+      else alert('Could not get your location. Please try again.');
+    },
+    {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+  );
 }
 
 function sf(c){
