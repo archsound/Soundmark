@@ -248,6 +248,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
 #locate-btn:hover{background:var(--text);color:var(--bg);}
 #locate-btn.locating{animation:spin 1s linear infinite;color:var(--text);}
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+/* admin */
+#admin-bar{display:none;background:#c03030;color:#fff;font-family:var(--mono);font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;padding:0.28rem 1.2rem;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:3000;}
+#admin-bar.on{display:flex;}
+#admin-exit{background:none;border:1px solid rgba(255,255,255,0.5);color:#fff;font-family:var(--mono);font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;padding:0.2rem 0.6rem;}
+#admin-exit:hover{background:rgba(255,255,255,0.2);}
+.l-del-btn{background:none;border:none;color:rgba(192,48,48,0.5);cursor:pointer;font-size:0.9rem;font-family:var(--mono);padding:0 0.2rem;transition:color 0.1s;}
+.l-del-btn:hover{color:#c03030;}
+.pu-del-btn{width:100%;background:none;border:1px solid rgba(192,48,48,0.35);color:#c03030;font-family:var(--mono);font-size:0.55rem;cursor:pointer;padding:0.35rem;letter-spacing:0.1em;text-transform:uppercase;margin-top:0.5rem;display:block;}
+.pu-del-btn:hover{background:rgba(192,48,48,0.08);}
 </style>
 </head>
 <body>
@@ -268,7 +278,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
     <span class="fl">Filter —</span>
     <button class="fc on" data-c="all" onclick="sf('all')">All</button>
   </div>
-  <div id="admin-bar"><span>&#9679; Admin Mode</span><button id="admin-exit" onclick="exitAdmin()">Exit</button></div>
+  <div id="admin-bar"><span>&#9679; Admin Mode — tap × to delete a soundmark</span><button id="admin-exit" onclick="exitAdmin()">Exit</button></div>
   <div id="stage">
     <div id="map"></div>
     <button id="locate-btn" onclick="locateMe()" title="Go to my location">◎</button>
