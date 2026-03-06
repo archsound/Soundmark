@@ -236,6 +236,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
 #rec-canvas-wrap{display:none;margin:0.4rem 0;border:1px solid var(--rule);background:var(--surf);height:52px;overflow:hidden;}
 #rec-canvas-wrap.on{display:block;}
 #rec-canvas{width:100%;height:52px;display:block;}
+
+/* locate button */
+#locate-btn{position:absolute;top:80px;left:10px;z-index:700;width:26px;height:26px;background:var(--surf);border:1px solid var(--rule);color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.1s;}
+#locate-btn:hover{background:var(--text);color:var(--bg);}
+#locate-btn.locating{animation:spin 1s linear infinite;color:var(--text);}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 </style>
 </head>
 <body>
@@ -258,6 +264,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
   </div>
   <div id="stage">
     <div id="map"></div>
+    <button id="locate-btn" onclick="locateMe()" title="Go to my location">◎</button>
     <div id="hint">Click anywhere to mark a sound</div>
     <div id="sbox">
       <div id="sbox-row">
@@ -572,7 +579,9 @@ function puHTML(m){
   if(m.place)h+="<div class='pu-loc'>"+m.place+"</div>";
   if(m.description)h+="<div class='pu-desc'>"+m.description+"</div>";
   if(m.audio)h+="<div class='pu-audio'><audio controls preload='none' src='"+m.audio+"'></audio></div>";
-  h+="<div class='pu-meta'><span>"+INT[m.intensity]+"</span><span>"+(m.contributor||'Anonymous')+"</span><span>"+new Date(m.date).toLocaleDateString()+"</span></div></div>";
+  h+="<div class='pu-meta'><span>"+INT[m.intensity]+"</span><span>"+(m.contributor||'Anonymous')+"</span><span>"+new Date(m.date).toLocaleDateString()+"</span></div>";
+  if(isAdmin)h+="<button class='pu-del-btn' onclick=\"dm(\'"+m.id+"\')\">Remove</button>";
+  h+="</div>";
   return h;
 }
 
@@ -605,7 +614,7 @@ function rl(){
       +"<div style='font-size:0.6rem;color:"+col+"'>"+m.category+"</div>"
       +"<div class='l-int'>"+INT[m.intensity]+"</div>"
       +"<div>"+ac+"</div>"
-      +"<div><button class='l-del' onclick='dm(\""+m.id+"\")'>×</button></div>";
+      +(isAdmin?"<div><button class='l-del-btn' onclick='dm(\""+m.id+"\")'>×</button></div>":"<div></div>");
     rows.appendChild(div);
   });
 }
