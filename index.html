@@ -658,12 +658,19 @@ function startRecording(){
     mediaRecorder=new MediaRecorder(stream);
     mediaRecorder.ondataavailable=function(e){if(e.data.size>0)recChunks.push(e.data);};
     mediaRecorder.onstop=function(){
-      var blob=new Blob(recChunks,{type:'audio/webm'});
+      var blobType=mimeType||'audio/webm';
+      var blob=new Blob(recChunks,{type:blobType});
+      var ext=blobType.indexOf('mp4')!==-1?'mp4':blobType.indexOf('ogg')!==-1?'ogg':'webm';
+      // Use blob URL for preview — works on all browsers including iOS Safari
+      var blobUrl=URL.createObjectURL(blob);
+      var audioEl=document.getElementById('rec-audio');
+      audioEl.src=blobUrl;
+      audioEl.load();
+      document.getElementById('rec-preview').classList.add('on');
+      // Also convert to base64 for storage (needed for Firebase)
       var reader=new FileReader();
       reader.onload=function(e){
-        pendingAudio={name:'recording.webm',dataUrl:e.target.result};
-        document.getElementById('rec-audio').src=e.target.result;
-        document.getElementById('rec-preview').classList.add('on');
+        pendingAudio={name:'recording.'+ext,dataUrl:e.target.result,blob:blob};
       };
       reader.readAsDataURL(blob);
     };
