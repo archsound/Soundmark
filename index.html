@@ -379,8 +379,14 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 // Live Firebase sync
 marksRef.on('value',function(snap){
   marks=[];
-  snap.forEach(function(child){marks.push(child.val());});
+  snap.forEach(function(child){
+    var v=child.val();
+    if(v&&v.title){if(!v.id)v.id=child.key;marks.push(v);}
+  });
+  console.log('Firebase sync: '+marks.length+' marks');
   rm();
+},function(err){
+  console.error('Firebase error:',err);
 });
 
 map.on('click',function(e){
@@ -589,7 +595,12 @@ function rm(){
   Object.values(lms).forEach(function(l){map.removeLayer(l);});lms={};
   var fl=filt==='all'?marks:marks.filter(function(m){return m.category===filt;});
   fl.forEach(function(m){
-    lms[m.id]=L.marker(m.position,{icon:mkIcon(m.category,m.intensity,m.waveenv||null)}).addTo(map).bindPopup(puHTML(m),{maxWidth:300});
+    (function(){
+    var lat=m.lat||(m.position?( Array.isArray(m.position)?m.position[0]:m.position[0]||m.position['0']):null);
+    var lng=m.lng||(m.position?(Array.isArray(m.position)?m.position[1]:m.position[1]||m.position['1']):null);
+    if(!lat||!lng)return;
+    lms[m.id]=L.marker([lat,lng],{icon:mkIcon(m.category,m.intensity,m.waveenv||null)}).addTo(map).bindPopup(puHTML(m),{maxWidth:300});
+  })();
   });ui();
 }
 
@@ -655,7 +666,15 @@ function startRecording(){
     analyser.fftSize=256;
     audioCtx.createMediaStreamSource(stream).connect(analyser);
 
-    mediaRecorder=new MediaRecorder(stream);
+    // Detect best mime type for this browser
+    var mimeType='';
+    var candidates=['audio/mp4','audio/aac','audio/webm;codecs=opus','audio/webm','audio/ogg'];
+    for(var i=0;i<candidates.length;i++){
+      try{if(MediaRecorder.isTypeSupported(candidates[i])){mimeType=candidates[i];break;}}catch(e){}
+    }
+    var recOpts=mimeType?{mimeType:mimeType}:{};
+    try{mediaRecorder=new MediaRecorder(stream,recOpts);}
+    catch(e){mediaRecorder=new MediaRecorder(stream);mimeType=mediaRecorder.mimeType||'audio/webm';}
     mediaRecorder.ondataavailable=function(e){if(e.data.size>0)recChunks.push(e.data);};
     mediaRecorder.onstop=function(){
       var blobType=mimeType||'audio/webm';
@@ -775,7 +794,7 @@ function saveM(){
   var id='sm-'+Date.now()+'-'+Math.random().toString(36).slice(2);
   var m={id:id,title:t,description:document.getElementById('fd').value.trim(),category:scat,
     intensity:+document.getElementById('fi').value,contributor:document.getElementById('fn').value.trim(),
-    position:[plng.lat,plng.lng],place:pplace,date:new Date().toISOString(),
+    lat:plng.lat,lng:plng.lng,place:pplace,date:new Date().toISOString(),
     audio:pendingAudio?pendingAudio.dataUrl:null,
     waveenv:null};
   function doSave(mark){
