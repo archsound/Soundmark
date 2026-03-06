@@ -268,6 +268,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
     <span class="fl">Filter —</span>
     <button class="fc on" data-c="all" onclick="sf('all')">All</button>
   </div>
+  <div id="admin-bar"><span>&#9679; Admin Mode</span><button id="admin-exit" onclick="exitAdmin()">Exit</button></div>
   <div id="stage">
     <div id="map"></div>
     <button id="locate-btn" onclick="locateMe()" title="Go to my location">◎</button>
@@ -428,6 +429,14 @@ marksRef.on('value',function(snap){
 },function(err){
   console.error('Firebase error:',err);
   alert('Firebase error: '+err.message);
+});
+
+map.on('popupclose',function(){
+  if(_cpAudio){
+    _cpAudio.pause();
+    _cpAudio=null;
+    _cpPlayer=null;
+  }
 });
 
 map.on('click',function(e){
