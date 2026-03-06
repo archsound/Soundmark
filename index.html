@@ -89,8 +89,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
 #listv.on{display:block;}
 #listv-inner{padding:2rem;max-width:1000px;}
 .l-empty{padding:3rem 0;color:var(--dim);font-size:0.75rem;}
-.l-head{display:grid;grid-template-columns:2.2fr 1fr 0.8fr 0.7fr 0.5fr auto;gap:1rem;padding:0 0 0.6rem;font-size:0.54rem;color:var(--faint);letter-spacing:0.14em;text-transform:uppercase;border-bottom:1px solid var(--text);}
-.l-row{display:grid;grid-template-columns:2.2fr 1fr 0.8fr 0.7fr 0.5fr auto;gap:1rem;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--rule2);}
+.l-head{display:grid;grid-template-columns:2.2fr 1fr 0.8fr 0.7fr 0.5fr auto auto;gap:1rem;padding:0 0 0.6rem;font-size:0.54rem;color:var(--faint);letter-spacing:0.14em;text-transform:uppercase;border-bottom:1px solid var(--text);}
+.l-row{display:grid;grid-template-columns:2.2fr 1fr 0.8fr 0.7fr 0.5fr auto auto;gap:1rem;align-items:center;padding:0.75rem 0;border-bottom:1px solid var(--rule2);}
 .l-title{font-family:var(--serif);font-size:1.1rem;font-weight:400;color:var(--text);line-height:1.2;}
 .l-sub{font-size:0.62rem;color:var(--dim);margin-top:0.1rem;}
 .l-loc{color:var(--dim);font-size:0.6rem;}
@@ -146,7 +146,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
 .pu{padding:1rem 1.1rem 0.9rem;min-width:210px;max-width:280px;}
 .pu-cat{font-size:0.54rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--dim);margin-bottom:0.3rem;}
 .pu-title{font-family:var(--serif);font-weight:400;font-size:1.2rem;color:var(--text);margin-bottom:0.2rem;line-height:1.2;}
-.pu-loc{font-size:0.64rem;color:var(--dim);margin-bottom:0.45rem;}
+.pu-loc{font-size:0.64rem;color:var(--dim);margin-bottom:0.2rem;}
+.pu-coords{font-family:var(--mono);font-size:0.54rem;color:var(--faint);margin-bottom:0.45rem;letter-spacing:0.04em;}
 .pu-desc{font-size:0.7rem;color:var(--dim);line-height:1.55;margin-bottom:0.5rem;}
 .pu-audio{margin-bottom:0.5rem;}
 .pu-audio audio{display:none;}
@@ -258,6 +259,32 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
 .l-del-btn:hover{color:#c03030;}
 .pu-del-btn{width:100%;background:none;border:1px solid rgba(192,48,48,0.35);color:#c03030;font-family:var(--mono);font-size:0.55rem;cursor:pointer;padding:0.35rem;letter-spacing:0.1em;text-transform:uppercase;margin-top:0.5rem;display:block;}
 .pu-del-btn:hover{background:rgba(192,48,48,0.08);}
+
+/* index toolbar */
+#list-toolbar{display:flex;align-items:center;gap:0.6rem;padding:0.7rem 0 0.9rem;flex-wrap:wrap;}
+.sort-btn{font-family:var(--mono);font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);background:none;border:1px solid var(--rule);cursor:pointer;padding:0.22rem 0.55rem;transition:all 0.1s;}
+.sort-btn.on{background:var(--text);color:var(--bg);border-color:var(--text);}
+.sort-btn:hover:not(.on){border-color:var(--dim);color:var(--text);}
+#toolbar-divider{width:1px;height:1.1rem;background:var(--rule);margin:0 0.2rem;}
+#export-btn{font-family:var(--mono);font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--dim);background:none;border:1px solid var(--rule);cursor:pointer;padding:0.22rem 0.55rem;transition:all 0.1s;display:flex;align-items:center;gap:0.3rem;}
+#export-btn:hover{border-color:var(--dim);color:var(--text);}
+#export-btn.has-sel{border-color:#4a7abf;color:#4a7abf;}
+#sel-count{font-family:var(--mono);font-size:0.55rem;color:var(--faint);letter-spacing:0.06em;}
+.l-check{width:16px;height:16px;cursor:pointer;accent-color:var(--text);}
+.l-row.selected{background:rgba(74,122,191,0.06);}
+
+/* drag select & map export */
+#drag-box{position:absolute;border:1.5px dashed #4a7abf;background:rgba(74,122,191,0.08);pointer-events:none;display:none;z-index:650;}
+#map-toolbar{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:700;display:flex;gap:0;align-items:center;background:var(--surf);border:1px solid var(--rule);}
+.map-tool-btn{font-family:var(--mono);font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;background:none;border:none;border-right:1px solid var(--rule);color:var(--dim);cursor:pointer;padding:0.28rem 0.7rem;white-space:nowrap;transition:all 0.1s;}
+.map-tool-btn:last-child{border-right:none;}
+.map-tool-btn:hover{background:var(--rule2);color:var(--text);}
+.map-tool-btn.on{background:var(--text);color:var(--bg);}
+.map-tool-btn.export{color:#5a9a6a;}
+.map-tool-btn.export:hover{background:#5a9a6a;color:#fff;}
+#sel-badge{background:#4a7abf;color:#fff;font-family:var(--mono);font-size:0.52rem;padding:0.28rem 0.55rem;letter-spacing:0.06em;display:none;border-right:1px solid rgba(255,255,255,0.2);}
+#sel-badge.on{display:inline-block;}
+#hint{display:none;}
 </style>
 </head>
 <body>
@@ -282,7 +309,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
   <div id="stage">
     <div id="map"></div>
     <button id="locate-btn" onclick="locateMe()" title="Go to my location">◎</button>
+    <div id="drag-box"></div>
     <div id="hint">Click anywhere to mark a sound</div>
+    <div id="map-toolbar">
+      <button class="map-tool-btn" id="drag-btn" onclick="toggleDragSelect()" title="Drag to select marks">&#9638; Select</button>
+      <span id="sel-badge">0 selected</span>
+      <button class="map-tool-btn export" id="walk-btn" onclick="exportMapWalk()" title="Open route in Google Maps">&#9656; Walk</button>
+    </div>
     <div id="sbox">
       <div id="sbox-row">
         <input id="si" placeholder="Search a place…" autocomplete="off"/>
@@ -292,7 +325,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--m
     </div>
     <div id="listv">
       <div id="listv-inner">
-        <div class="l-head"><span>Title</span><span>Location</span><span>Category</span><span>Intensity</span><span>Audio</span><span></span></div>
+        <div id="list-toolbar">
+          <span style="font-family:var(--mono);font-size:0.55rem;color:var(--faint);letter-spacing:0.1em;text-transform:uppercase;">Sort —</span>
+          <button class="sort-btn on" data-sort="date" onclick="setSort('date')">Date</button>
+          <button class="sort-btn" data-sort="proximity" onclick="setSort('proximity')">Proximity</button>
+          <button class="sort-btn" data-sort="category" onclick="setSort('category')">Category</button>
+          <button class="sort-btn" data-sort="intensity" onclick="setSort('intensity')">Intensity</button>
+          <div id="toolbar-divider"></div>
+          <button id="export-btn" onclick="exportWalk()">&#9656; Sound Walk <span id="sel-count"></span></button>
+        </div>
+        <div class="l-head"><span>Title</span><span>Location</span><span>Category</span><span>Intensity</span><span>Audio</span><span></span><span></span></div>
         <div id="l-rows"></div>
         <div class="l-empty" id="l-empty" style="display:none">No soundmarks yet.</div>
       </div>
@@ -450,6 +492,7 @@ map.on('popupclose',function(){
 });
 
 map.on('click',function(e){
+  if(_suppressNextClick){_suppressNextClick=false;return;}
   plng=e.latlng;pplace='';
   document.getElementById('mpl').textContent='Locating…';
   openM(e.latlng);
@@ -649,6 +692,9 @@ function puHTML(m){
   var h="<div class='pu'><div class='pu-cat' style='color:"+col+"'>"+m.category+"</div>"
     +"<div class='pu-title'>"+m.title+"</div>";
   if(m.place)h+="<div class='pu-loc'>"+m.place+"</div>";
+  var lat=parseFloat(m.lat||(m.position&&m.position[0]));
+  var lng=parseFloat(m.lng||(m.position&&m.position[1]));
+  if(!isNaN(lat)&&!isNaN(lng))h+="<div class='pu-coords'>"+lat.toFixed(4)+"°, "+lng.toFixed(4)+"°</div>";
   if(m.description)h+="<div class='pu-desc'>"+m.description+"</div>";
   if(m.audio){
     var safeAudio=m.audio.replace(/'/g,"\'");
@@ -698,18 +744,24 @@ function ui(){
 
 function rl(){
   var rows=document.getElementById('l-rows');rows.innerHTML='';
-  var fl=filt==='all'?marks:marks.filter(function(m){return m.category===filt;});
+  var fl=getSortedMarks();
   document.getElementById('l-empty').style.display=fl.length===0?'block':'none';
   fl.forEach(function(m){
     var col=COL[m.category]||'#888',div=document.createElement('div');div.className='l-row';
     var desc=m.description?m.description.slice(0,55)+(m.description.length>55?'…':''):'';
     var ac=m.audio?"<button class='l-audio-btn' onclick='playAudio(\""+m.id+"\")'>&#9654; Play</button>":"<span style='color:var(--faint)'>—</span>";
+    var lat=parseFloat(m.lat||(m.position&&m.position[0]));
+    var lng=parseFloat(m.lng||(m.position&&m.position[1]));
+    var coordStr=(!isNaN(lat)&&!isNaN(lng))?"<div style='font-family:var(--mono);font-size:0.52rem;color:var(--faint);margin-top:0.1rem;'>"+lat.toFixed(4)+"°, "+lng.toFixed(4)+"°</div>":'';
+    var checked=selectedIds.indexOf(m.id)!==-1;
+    if(checked)div.classList.add('selected');
     div.innerHTML="<div><div class='l-title'>"+m.title+"</div>"+(desc?"<div class='l-sub'>"+desc+"</div>":"")+"</div>"
-      +"<div class='l-loc'>"+(m.place||'—')+"</div>"
+      +"<div class='l-loc'>"+(m.place||'—')+coordStr+"</div>"
       +"<div style='font-size:0.6rem;color:"+col+"'>"+m.category+"</div>"
       +"<div class='l-int'>"+INT[m.intensity]+"</div>"
       +"<div>"+ac+"</div>"
-      +(isAdmin?"<div><button class='l-del-btn' onclick='dm(\""+m.id+"\")'>×</button></div>":"<div></div>");
+      +(isAdmin?"<div><button class='l-del-btn' onclick='dm(\""+m.id+"\")'>×</button></div>":"<div></div>")
+      +"<div><input type='checkbox' class='l-check' "+(checked?'checked':'')+" onchange='toggleSel(\""+m.id+"\",this)' title='Add to sound walk'/></div>";
     rows.appendChild(div);
   });
 }
@@ -917,6 +969,247 @@ function cpSeek(e,track){
   if(!_cpAudio||!_cpAudio.duration)return;
   var rect=track.getBoundingClientRect();
   _cpAudio.currentTime=((e.clientX-rect.left)/rect.width)*_cpAudio.duration;
+}
+
+// ── Sort & Select ──
+var currentSort='date';
+var selectedIds=[];
+var userLat=null,userLng=null;
+
+function setSort(s){
+  currentSort=s;
+  document.querySelectorAll('.sort-btn').forEach(function(b){b.classList.toggle('on',b.dataset.sort===s);});
+  if(s==='proximity'){
+    navigator.geolocation.getCurrentPosition(function(pos){
+      userLat=pos.coords.latitude;userLng=pos.coords.longitude;rl();
+    },function(){alert('Could not get location for proximity sort.');});
+  } else { rl(); }
+}
+
+function getSortedMarks(){
+  var fl=filt==='all'?marks.slice():marks.filter(function(m){return m.category===filt;});
+  if(currentSort==='date'){
+    fl.sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  } else if(currentSort==='category'){
+    fl.sort(function(a,b){return (a.category||'').localeCompare(b.category||'');});
+  } else if(currentSort==='intensity'){
+    fl.sort(function(a,b){return b.intensity-a.intensity;});
+  } else if(currentSort==='proximity'&&userLat!==null){
+    fl.sort(function(a,b){
+      var alat=parseFloat(a.lat||(a.position&&a.position[0]));
+      var alng=parseFloat(a.lng||(a.position&&a.position[1]));
+      var blat=parseFloat(b.lat||(b.position&&b.position[0]));
+      var blng=parseFloat(b.lng||(b.position&&b.position[1]));
+      var da=Math.pow(alat-userLat,2)+Math.pow(alng-userLng,2);
+      var db=Math.pow(blat-userLat,2)+Math.pow(blng-userLng,2);
+      return da-db;
+    });
+  }
+  return fl;
+}
+
+function toggleSel(id,cb){
+  var idx=selectedIds.indexOf(id);
+  if(cb.checked){if(idx===-1)selectedIds.push(id);}
+  else{if(idx!==-1)selectedIds.splice(idx,1);}
+  var row=cb.closest('.l-row');
+  if(row)row.classList.toggle('selected',cb.checked);
+  updateSelCount();updateSelBadge();
+}
+
+function updateSelCount(){
+  var n=selectedIds.length;
+  var sc=document.getElementById('sel-count');
+  var eb=document.getElementById('export-btn');
+  if(n>0){sc.textContent='('+n+' selected)';eb.classList.add('has-sel');}
+  else{sc.textContent='';eb.classList.remove('has-sel');}
+}
+
+function exportWalk(){
+  var sel=selectedIds.length>0
+    ?marks.filter(function(m){return selectedIds.indexOf(m.id)!==-1;})
+    :marks;
+  if(sel.length===0){alert('No soundmarks to export.');return;}
+  if(sel.length>10){alert('Google Maps supports up to 10 waypoints. Please select 10 or fewer.');return;}
+  // Build Google Maps directions URL
+  var pts=sel.map(function(m){
+    var lat=parseFloat(m.lat||(m.position&&m.position[0]));
+    var lng=parseFloat(m.lng||(m.position&&m.position[1]));
+    return lat.toFixed(6)+','+lng.toFixed(6);
+  }).filter(function(p){return p!=='NaN,NaN';});
+  if(pts.length<2){alert('Select at least 2 soundmarks for a walk route.');return;}
+  var origin=pts[0];
+  var dest=pts[pts.length-1];
+  var waypoints=pts.slice(1,-1).join('|');
+  var url='https://www.google.com/maps/dir/?api=1'
+    +'&origin='+origin
+    +'&destination='+dest
+    +(waypoints?'&waypoints='+encodeURIComponent(waypoints):'')
+    +'&travelmode=walking';
+  window.open(url,'_blank');
+}
+
+// ── Drag select on map ──
+var dragSelectMode=false;
+var dragStart=null,dragRect=null;
+
+function toggleDragSelect(){
+  dragSelectMode=!dragSelectMode;
+  var btn=document.getElementById('drag-btn');
+  btn.classList.toggle('on',dragSelectMode);
+  btn.textContent=dragSelectMode?'✕ Cancel':'⬚ Select';
+  map.dragging[dragSelectMode?'disable':'enable']();
+  document.getElementById('map').style.cursor=dragSelectMode?'crosshair':'';
+}
+
+var mapEl=document.getElementById('map');
+
+mapEl.addEventListener('mousedown',function(e){
+  if(!dragSelectMode||e.button!==0)return;
+  e.preventDefault();
+  dragStart={x:e.offsetX,y:e.offsetY};
+  var box=document.getElementById('drag-box');
+  box.style.left=dragStart.x+'px';box.style.top=dragStart.y+'px';
+  box.style.width='0px';box.style.height='0px';box.style.display='block';
+});
+
+mapEl.addEventListener('mousemove',function(e){
+  if(!dragSelectMode||!dragStart)return;
+  var box=document.getElementById('drag-box');
+  var x=Math.min(e.offsetX,dragStart.x);
+  var y=Math.min(e.offsetY,dragStart.y);
+  var w=Math.abs(e.offsetX-dragStart.x);
+  var h=Math.abs(e.offsetY-dragStart.y);
+  box.style.left=x+'px';box.style.top=y+'px';
+  box.style.width=w+'px';box.style.height=h+'px';
+  dragRect={x:x,y:y,w:w,h:h};
+});
+
+var _suppressNextClick=false;
+mapEl.addEventListener('mouseup',function(e){
+  if(!dragSelectMode||!dragRect)return;
+  _suppressNextClick=true;
+  document.getElementById('drag-box').style.display='none';
+  // Find marks inside the drag rectangle
+  var mapRect=mapEl.getBoundingClientRect();
+  marks.forEach(function(m){
+    var lat=parseFloat(m.lat||(m.position&&m.position[0]));
+    var lng=parseFloat(m.lng||(m.position&&m.position[1]));
+    if(isNaN(lat)||isNaN(lng))return;
+    var pt=map.latLngToContainerPoint([lat,lng]);
+    if(pt.x>=dragRect.x&&pt.x<=dragRect.x+dragRect.w&&pt.y>=dragRect.y&&pt.y<=dragRect.y+dragRect.h){
+      if(selectedIds.indexOf(m.id)===-1)selectedIds.push(m.id);
+    }
+  });
+  dragStart=null;dragRect=null;
+  updateSelCount();
+  updateSelBadge();
+  // turn off drag mode
+  toggleDragSelect();
+});
+
+// touch support for mobile drag
+mapEl.addEventListener('touchstart',function(e){
+  if(!dragSelectMode)return;
+  e.preventDefault();
+  var t=e.touches[0];
+  var r=mapEl.getBoundingClientRect();
+  dragStart={x:t.clientX-r.left,y:t.clientY-r.top};
+  var box=document.getElementById('drag-box');
+  box.style.left=dragStart.x+'px';box.style.top=dragStart.y+'px';
+  box.style.width='0px';box.style.height='0px';box.style.display='block';
+},{passive:false});
+
+mapEl.addEventListener('touchmove',function(e){
+  if(!dragSelectMode||!dragStart)return;
+  e.preventDefault();
+  var t=e.touches[0];
+  var r=mapEl.getBoundingClientRect();
+  var ox=t.clientX-r.left,oy=t.clientY-r.top;
+  var x=Math.min(ox,dragStart.x),y=Math.min(oy,dragStart.y);
+  var w=Math.abs(ox-dragStart.x),h=Math.abs(oy-dragStart.y);
+  var box=document.getElementById('drag-box');
+  box.style.left=x+'px';box.style.top=y+'px';box.style.width=w+'px';box.style.height=h+'px';
+  dragRect={x:x,y:y,w:w,h:h};
+},{passive:false});
+
+mapEl.addEventListener('touchend',function(e){
+  if(!dragSelectMode||!dragRect)return;
+  _suppressNextClick=true;
+  document.getElementById('drag-box').style.display='none';
+  marks.forEach(function(m){
+    var lat=parseFloat(m.lat||(m.position&&m.position[0]));
+    var lng=parseFloat(m.lng||(m.position&&m.position[1]));
+    if(isNaN(lat)||isNaN(lng))return;
+    var pt=map.latLngToContainerPoint([lat,lng]);
+    if(pt.x>=dragRect.x&&pt.x<=dragRect.x+dragRect.w&&pt.y>=dragRect.y&&pt.y<=dragRect.y+dragRect.h){
+      if(selectedIds.indexOf(m.id)===-1)selectedIds.push(m.id);
+    }
+  });
+  dragStart=null;dragRect=null;
+  updateSelCount();updateSelBadge();
+  toggleDragSelect();
+});
+
+function updateSelBadge(){
+  var b=document.getElementById('sel-badge');
+  if(!b)return;
+  var n=selectedIds.length;
+  b.textContent=n+' selected';
+  b.classList.toggle('on',n>0);
+}
+
+// ── KML export for Google Earth ──
+function exportMapWalk(){
+  var sel=selectedIds.length>0
+    ?marks.filter(function(m){return selectedIds.indexOf(m.id)!==-1;})
+    :marks;
+  if(sel.length<2){alert('Select at least 2 soundmarks for a walk route.');return;}
+  if(sel.length>10){alert('Google Maps supports up to 10 waypoints. Please select 10 or fewer.');return;}
+  var pts=sel.map(function(m){
+    var lat=parseFloat(m.lat||(m.position&&m.position[0]));
+    var lng=parseFloat(m.lng||(m.position&&m.position[1]));
+    return isNaN(lat)?null:lat.toFixed(6)+','+lng.toFixed(6);
+  }).filter(Boolean);
+  var origin=pts[0];
+  var dest=pts[pts.length-1];
+  var waypoints=pts.slice(1,-1).join('|');
+  var url='https://www.google.com/maps/dir/?api=1'
+    +'&origin='+origin
+    +'&destination='+dest
+    +(waypoints?'&waypoints='+encodeURIComponent(waypoints):'')
+    +'&travelmode=walking';
+  window.open(url,'_blank');
+}
+
+function exportKML(){
+  var sel=selectedIds.length>0
+    ?marks.filter(function(m){return selectedIds.indexOf(m.id)!==-1;})
+    :marks;
+  if(sel.length===0){alert('No soundmarks to export.');return;}
+  var kml='<?xml version="1.0" encoding="UTF-8"?>\n'
+    +'<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n'
+    +'<name>Soundmarks</name>\n';
+  sel.forEach(function(m){
+    var lat=parseFloat(m.lat||(m.position&&m.position[0]));
+    var lng=parseFloat(m.lng||(m.position&&m.position[1]));
+    if(isNaN(lat)||isNaN(lng))return;
+    kml+='<Placemark>\n'
+      +'<name>'+escXML(m.title)+'</name>\n'
+      +'<description>'+escXML((m.description||'')+(m.place?'\nLocation: '+m.place:'')+'\nCategory: '+m.category+'\nIntensity: '+INT[m.intensity])+'</description>\n'
+      +'<Point><coordinates>'+lng.toFixed(6)+','+lat.toFixed(6)+',0</coordinates></Point>\n'
+      +'</Placemark>\n';
+  });
+  kml+='</Document>\n</kml>';
+  var blob=new Blob([kml],{type:'application/vnd.google-earth.kml+xml'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='soundmarks.kml';
+  a.click();
+}
+
+function escXML(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function sf(c){
