@@ -369,7 +369,7 @@ var marksRef=db.ref('marks');
 var marks=[];
 var filt='all',plng=null,pplace='',scat='natural',lms={};
 var pendingAudio=null;
-var isSat=true,isInv=false;
+var isSat=true,isInv=false,isAdmin=false;
 
 var map=L.map('map',{center:[20,0],zoom:2,minZoom:2});
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
@@ -381,12 +381,26 @@ marksRef.on('value',function(snap){
   marks=[];
   snap.forEach(function(child){
     var v=child.val();
-    if(v&&v.title){if(!v.id)v.id=child.key;marks.push(v);}
+    console.log('RAW Firebase child key:',child.key,'val:',JSON.stringify(v).slice(0,200));
+    if(!v)return;
+    if(!v.id)v.id=child.key;
+    if(!v.title)v.title='Untitled';
+    // Normalize position - handle array, object with numeric keys, or lat/lng fields
+    if(!v.lat&&v.position){
+      var p=v.position;
+      if(Array.isArray(p)){v.lat=p[0];v.lng=p[1];}
+      else{v.lat=p[0]||p['0'];v.lng=p[1]||p['1'];}
+    }
+    if(!v.category)v.category='ambient';
+    if(v.intensity===undefined)v.intensity=2;
+    console.log('Processed mark: lat='+v.lat+' lng='+v.lng+' title='+v.title);
+    marks.push(v);
   });
-  console.log('Firebase sync: '+marks.length+' marks');
+  console.log('Total marks loaded:',marks.length);
   rm();
 },function(err){
   console.error('Firebase error:',err);
+  alert('Firebase error: '+err.message);
 });
 
 map.on('click',function(e){
@@ -592,16 +606,24 @@ function puHTML(m){
 }
 
 function rm(){
-  Object.values(lms).forEach(function(l){map.removeLayer(l);});lms={};
+  Object.values(lms).forEach(function(l){try{map.removeLayer(l);}catch(e){}});lms={};
   var fl=filt==='all'?marks:marks.filter(function(m){return m.category===filt;});
   fl.forEach(function(m){
-    (function(){
-    var lat=m.lat||(m.position?( Array.isArray(m.position)?m.position[0]:m.position[0]||m.position['0']):null);
-    var lng=m.lng||(m.position?(Array.isArray(m.position)?m.position[1]:m.position[1]||m.position['1']):null);
-    if(!lat||!lng)return;
-    lms[m.id]=L.marker([lat,lng],{icon:mkIcon(m.category,m.intensity,m.waveenv||null)}).addTo(map).bindPopup(puHTML(m),{maxWidth:300});
-  })();
-  });ui();
+    // Extract lat/lng from any possible storage format
+    var lat=parseFloat(m.lat);
+    var lng=parseFloat(m.lng);
+    if((isNaN(lat)||isNaN(lng))&&m.position){
+      var p=m.position;
+      lat=parseFloat(Array.isArray(p)?p[0]:(p[0]!==undefined?p[0]:p['0']));
+      lng=parseFloat(Array.isArray(p)?p[1]:(p[1]!==undefined?p[1]:p['1']));
+    }
+    if(isNaN(lat)||isNaN(lng)){console.warn('Skipping mark with bad coords:',m.id,m);return;}
+    try{
+      lms[m.id]=L.marker([lat,lng],{icon:mkIcon(m.category||'ambient',m.intensity||2,m.waveenv||null)})
+        .addTo(map).bindPopup(puHTML(m),{maxWidth:300});
+    }catch(e){console.error('Marker error for',m.id,e);}
+  });
+  ui();
 }
 
 function ui(){
