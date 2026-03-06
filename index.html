@@ -632,15 +632,14 @@ function puHTML(m){
   if(m.place)h+="<div class='pu-loc'>"+m.place+"</div>";
   if(m.description)h+="<div class='pu-desc'>"+m.description+"</div>";
   if(m.audio){
-    var pid='cp-'+m.id.replace(/[^a-z0-9]/gi,'-');
+    var safeAudio=m.audio.replace(/'/g,"\'");
     h+="<div class='pu-audio'>"
-      +"<audio id='"+pid+"-audio' preload='none' src='"+m.audio+"'></audio>"
-      +"<div class='custom-player'>"
-      +"<button class='cp-btn' id='"+pid+"-btn' onclick='cpToggle(\'"+pid+"\")'>&#9654;</button>"
-      +"<div class='cp-track' id='"+pid+"-track' onclick='cpSeek(event,\'"+pid+"\")' >"
-      +"<div class='cp-fill' id='"+pid+"-fill'></div>"
+      +"<div class='custom-player' data-src='"+safeAudio+"' data-playing='0'>"
+      +"<button class='cp-btn' onclick='cpToggle(this)'>&#9654;</button>"
+      +"<div class='cp-track' onclick='cpSeek(event,this)'>"
+      +"<div class='cp-fill'></div>"
       +"</div>"
-      +"<span class='cp-time' id='"+pid+"-time'>0:00</span>"
+      +"<span class='cp-time'>0:00</span>"
       +"</div></div>";
   }
   h+="<div class='pu-meta'><span>"+INT[m.intensity]+"</span><span>"+(m.contributor||'Anonymous')+"</span><span>"+new Date(m.date).toLocaleDateString()+"</span></div>";
@@ -860,46 +859,45 @@ function locateMe(){
 }
 
 // ── Custom audio player ──
-var _cpActive={};
-function cpToggle(pid){
-  var audio=document.getElementById(pid+'-audio');
-  var btn=document.getElementById(pid+'-btn');
-  if(!audio)return;
-  if(audio.paused){
-    // pause any other playing
-    Object.keys(_cpActive).forEach(function(k){
-      if(k!==pid&&_cpActive[k]){_cpActive[k].pause();
-        var ob=document.getElementById(k+'-btn');if(ob)ob.innerHTML='&#9654;';}
-    });
-    audio.play();
-    _cpActive[pid]=audio;
+var _cpAudio=null, _cpPlayer=null;
+
+function cpToggle(btn){
+  var player=btn.closest('.custom-player');
+  var src=player.dataset.src;
+  if(!src)return;
+  // If clicking a different player, stop current
+  if(_cpAudio&&_cpPlayer!==player){
+    _cpAudio.pause();_cpAudio=null;
+    _cpPlayer.querySelector('.cp-btn').innerHTML='&#9654;';
+    _cpPlayer.querySelector('.cp-fill').style.width='0%';
+    _cpPlayer.querySelector('.cp-time').textContent='0:00';
+    _cpPlayer=null;
+  }
+  if(!_cpAudio){_cpAudio=new Audio(src);_cpPlayer=player;}
+  if(_cpAudio.paused){
+    _cpAudio.play().catch(function(e){console.error('Play failed:',e);});
     btn.innerHTML='&#9646;&#9646;';
-    cpAnimate(pid);
+    cpAnimate(player,_cpAudio);
   } else {
-    audio.pause();
+    _cpAudio.pause();
     btn.innerHTML='&#9654;';
   }
 }
-function cpAnimate(pid){
-  var audio=document.getElementById(pid+'-audio');
-  var fill=document.getElementById(pid+'-fill');
-  var time=document.getElementById(pid+'-time');
-  var btn=document.getElementById(pid+'-btn');
-  if(!audio||audio.paused){if(btn)btn.innerHTML='&#9654;';return;}
-  if(fill&&audio.duration){fill.style.width=(audio.currentTime/audio.duration*100)+'%';}
-  if(time){
-    var s=Math.floor(audio.currentTime);
-    time.textContent=Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;
-  }
-  audio.onended=function(){btn.innerHTML='&#9654;';fill.style.width='0%';time.textContent='0:00';};
-  requestAnimationFrame(function(){cpAnimate(pid);});
+function cpAnimate(player,audio){
+  if(!audio||audio.paused)return;
+  var fill=player.querySelector('.cp-fill');
+  var time=player.querySelector('.cp-time');
+  var btn=player.querySelector('.cp-btn');
+  if(audio.duration)fill.style.width=(audio.currentTime/audio.duration*100)+'%';
+  var s=Math.floor(audio.currentTime);
+  time.textContent=Math.floor(s/60)+':'+(s%60<10?'0':'')+s%60;
+  audio.onended=function(){btn.innerHTML='&#9654;';fill.style.width='100%';};
+  requestAnimationFrame(function(){cpAnimate(player,audio);});
 }
-function cpSeek(e,pid){
-  var audio=document.getElementById(pid+'-audio');
-  var track=document.getElementById(pid+'-track');
-  if(!audio||!track||!audio.duration)return;
+function cpSeek(e,track){
+  if(!_cpAudio||!_cpAudio.duration)return;
   var rect=track.getBoundingClientRect();
-  audio.currentTime=((e.clientX-rect.left)/rect.width)*audio.duration;
+  _cpAudio.currentTime=((e.clientX-rect.left)/rect.width)*_cpAudio.duration;
 }
 
 function sf(c){
